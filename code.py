@@ -23,7 +23,7 @@ class DatabaseManager:
         self.cursor = None
 
     def connect(self):
-        self.conn = sqlite3.connect(self.db_name, timeout=10) 
+        self.conn = sqlite3.connect(self.db_name, check_same_thread=False) 
         self.cursor = self.conn.cursor()
         self.cursor.execute("PRAGMA foreign_keys = ON;") 
 
@@ -960,7 +960,8 @@ class QuizFrame(ttk.Frame): # Kept for context, largely same
                 if br: err+=f" Blocked: {br}"
                 elif res.get("error"): err+=f" API Error: {res['error'].get('message','Unknown')}"
                 self.controller.after(0,lambda:messagebox.showerror("API Error",err))
-        except Exception as e: print(f"Quiz gen err: {e}"); self.controller.after(0,lambda:messagebox.showerror("Error",f"Quiz error: {e}"))
+        except Exception as e:print(f"Quiz gen err: {e}"); self.controller.after(0, lambda e=e: messagebox.showerror("Error", f"Quiz error: {e}"))
+
         finally: self.controller.after(0,self.generation_finished)
     def generation_finished(self): self.loading_label.config(text=""); self.generate_button.config(state=tk.NORMAL)
     def display_quiz_start(self): # Same
@@ -1376,7 +1377,7 @@ class GeminiChatFrame(ttk.Frame):
         api_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={self.gemini_api_key}"
 
         try:
-            import requests
+            import requests;
             response = requests.post(api_url, headers={'Content-Type': 'application/json'}, json=payload, timeout=60)
             response.raise_for_status()
             result = response.json()
