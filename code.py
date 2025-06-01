@@ -1,12 +1,3 @@
-# ============================================================================
-# AI Study Assistant Application
-# Version: 1.3.4
-# A comprehensive study management tool with AI-powered features
-# ============================================================================
-
-# ------------------------------
-# Import Statements
-# ------------------------------
 import tkinter as tk
 from tkinter import ttk, messagebox, simpledialog, scrolledtext, filedialog
 import sqlite3
@@ -19,26 +10,13 @@ import threading
 import os 
 import shutil 
 
-# ------------------------------
-# Global Configuration
-# ------------------------------
+# --- Configuration ---
 DATABASE_NAME = "ai_study_assistant.db"
 GEMINI_API_KEY = "" # For all Gemini features (Quiz, Helper, Chat)
 APP_VERSION = "1.3.4" # Updated app version for schema fix
 
-# ------------------------------
-# Database Management
-# ------------------------------
+# --- Database Manager ---
 class DatabaseManager:
-    """
-    Handles all database operations including:
-    - User authentication
-    - Task management
-    - Study session logging
-    - Quiz attempts
-    - AI content storage
-    - Chat history
-    """
     def __init__(self, db_name):
         self.db_name = db_name
         self.conn = None
@@ -396,17 +374,8 @@ class DatabaseManager:
         return self.execute_query("INSERT OR REPLACE INTO config (key, value) VALUES (?, ?)", (key, value))
 
 
-# ------------------------------
-# Main Application Window
-# ------------------------------
+# --- Main Application ---
 class AIStudyAssistant(tk.Tk):
-    """
-    Main application window that manages:
-    - User interface setup
-    - Frame navigation
-    - User session management
-    - Status updates
-    """
     def __init__(self, db_manager):
         super().__init__()
         self.db_manager = db_manager
@@ -483,11 +452,8 @@ class AIStudyAssistant(tk.Tk):
         else: self.status_bar._after_id = None
 
 
-# ------------------------------
-# Authentication Frames
-# ------------------------------
+# --- Frames (UI Pages) ---
 class LoginPage(ttk.Frame): 
-    """Handles user login functionality"""
     def __init__(self, parent, controller):
         super().__init__(parent); self.controller = controller; center_frame = ttk.Frame(self); center_frame.pack(expand=True) 
         ttk.Label(center_frame, text="Login", style="Header.TLabel").pack(pady=20)
@@ -507,7 +473,6 @@ class LoginPage(ttk.Frame):
     def refresh_data(self): self.controller.update_status("Please log in or register.")
 
 class RegisterPage(ttk.Frame): 
-    """Handles new user registration"""
     def __init__(self, parent, controller):
         super().__init__(parent); self.controller = controller; center_frame = ttk.Frame(self); center_frame.pack(expand=True)
         ttk.Label(center_frame, text="Register New Account", style="Header.TLabel").pack(pady=20)
@@ -534,17 +499,7 @@ class RegisterPage(ttk.Frame):
     def refresh_data(self): self.controller.update_status("Create a new account.")
 
 
-# ------------------------------
-# Main Dashboard
-# ------------------------------
 class MainPage(ttk.Frame):
-    """
-    Main dashboard featuring:
-    - Welcome message
-    - Motivational quotes
-    - Quick access to all features
-    - Reminder checking
-    """
     def __init__(self, parent, controller):
         super().__init__(parent)
         self.controller = controller
@@ -621,17 +576,6 @@ class MainPage(ttk.Frame):
         self.controller.update_status(f"Welcome back, {self.controller.current_username}!")
 
 
-# ------------------------------
-# Task Management
-# ------------------------------
-class TaskManagerFrame(ttk.Frame): 
-    """
-    Task management system with:
-    - Task creation and editing
-    - Category management
-    - Due date tracking
-    - Task status updates
-    """
 # --- Reminder Popup (New Toplevel window) ---
 class ReminderPopup(tk.Toplevel): 
     def __init__(self, controller, title, message):
@@ -837,23 +781,11 @@ class TaskManagerFrame(ttk.Frame):
             else: messagebox.showerror("DB Error", "Delete failed."); self.controller.update_status("Task delete failed.", 3000)
 
 
-# ------------------------------
-# Study Tracking & Pomodoro
-# ------------------------------
-class StudyTrackerFrame(ttk.Frame):
-    """
-    Study session tracking with:
-    - Timer functionality
-    - Pomodoro technique support
-    - Study session logging
-    - Session history
-    """
+class StudyTrackerFrame(ttk.Frame): # Updated with Pomodoro
     def __init__(self, parent, controller):
         super().__init__(parent)
         self.controller = controller
-        self.timer_running = False
-        self.start_time = None
-        self.timer_id = None
+        self.timer_running = False; self.start_time = None; self.timer_id = None
         self.pomodoro_mode = tk.BooleanVar(value=False)
         self.pomodoro_state = "work" 
         self.pomodoro_cycles_done = 0
@@ -971,18 +903,8 @@ class StudyTrackerFrame(ttk.Frame):
         if not self.timer_running: self.controller.update_status("Study Tracker ready.")
 
 
-# ------------------------------
-# Quiz System
-# ------------------------------
-class QuizFrame(ttk.Frame):
-    """
-    AI-powered quiz system with:
-    - Dynamic quiz generation
-    - Multiple choice questions
-    - Score tracking
-    - Quiz review functionality
-    """
-    def __init__(self, parent, controller):
+class QuizFrame(ttk.Frame): # Kept for context, largely same
+    def __init__(self, parent, controller): 
         super().__init__(parent); self.controller = controller; self.quiz_questions_full_data = []; self.current_question_index = 0
         self.score = 0; self.quiz_topic = ""; self.num_questions_to_generate = 5 
         setup_frame = ttk.Frame(self, padding=10); setup_frame.pack(pady=10, fill=tk.X)
@@ -1102,14 +1024,8 @@ class QuizFrame(ttk.Frame):
         self.submit_button.config(text="Submit Answer",state=tk.DISABLED); self.loading_label.config(text="")
     def refresh_data(self): self.reset_quiz_ui(); self.controller.update_status("Ready for new quiz.")
 
-class QuizReviewer(ttk.Frame):
-    """
-    Quiz review interface with:
-    - Question-by-question review
-    - Answer explanations
-    - Navigation controls
-    """
-    def __init__(self, parent_window, quiz_data, controller):
+class QuizReviewer(ttk.Frame): # Kept for context, logic same
+    def __init__(self, parent_window, quiz_data, controller): 
         super().__init__(parent_window, padding=15); self.parent_window = parent_window; self.quiz_data = quiz_data
         self.controller = controller; self.current_review_index = 0; self.pack(fill=tk.BOTH, expand=True)
         self.question_text_label = ttk.Label(self, text="", style="SubHeader.TLabel", wraplength=650, justify=tk.LEFT); self.question_text_label.pack(pady=(0,10), anchor="w")
@@ -1148,18 +1064,7 @@ class QuizReviewer(ttk.Frame):
     def next_question_review(self): # Same
         if self.current_review_index < len(self.quiz_data) - 1: self.current_review_index += 1; self.display_review_question()
 
-
-# ------------------------------
-# AI Features
-# ------------------------------
-class AIHelperFrame(ttk.Frame):
-    """
-    AI study assistant with:
-    - Concept explanation
-    - Text summarization
-    - Practice question generation
-    - Response saving
-    """
+class AIHelperFrame(ttk.Frame): # Kept for context, logic largely same
     def __init__(self, parent, controller):
         super().__init__(parent); self.controller = controller
         ttk.Label(self, text="AI Study Helper (Gemini)", style="Header.TLabel").pack(pady=10) # Clarified Gemini
@@ -1409,13 +1314,6 @@ class AnalyticsFrame(ttk.Frame): # Kept for context, logic largely same
 
 # --- Gemini Chat Frame (Replaces OpenAIChatFrame) ---
 class GeminiChatFrame(ttk.Frame):
-    """
-    AI chat interface with:
-    - Real-time conversation
-    - Chat history
-    - Context awareness
-    - Message persistence
-    """
     def __init__(self, parent, controller):
         super().__init__(parent)
         self.controller = controller
